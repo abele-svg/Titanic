@@ -1,0 +1,259 @@
+---
+title: "Titanic Case Analysis 3"
+author: "Naftali"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Introduction
+
+Titanic data set is a data set containing information about passengers who were on board the ill fated Titanic that sank in 1912. The data set includes details on passenger class, age, gender, and survival status. For this analysis, we use R and the Tidyverse package to explore and identify interesting trends and correlations in the data.
+
+In the analysis, we get to explore the Titanic data set using R together with other tools. The Titanic data set contains information on the passengers who were aboard the Titanic when it sank. Information such as passenger class, age, gender, and whether or not they survived are represented in this data.
+
+My main objective in conducting this analysis is to explore the available data in the Titanic data set using R to find interesting trends or correlations in the data. Various tools such as ggplot, tidyr, and dplyr, are used to visualize and manipulate the data.
+
+#### Data Wrangling
+
+Loading the necessary libraries:
+
+```{r message=FALSE}
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+Using read.csv(), I imported the Titanic data set into R. Then used the glimpse() function to view the summary of the data set and get a general idea of what the data looks like.
+
+```{r message=FALSE}
+titan_data <- read_csv("Titanic.csv")
+glimpse(titan_data)
+```
+
+Next, I clean the data by removing irrelevant columns and converting the Survived column to a factor: From our output above, we get to know that the data set contains 12 columns, that is PassengerId, Survived, Pclass, Name, Sex, Age, SibSp, Parch, Ticket, Fare, Cabin, and Embarked. The Survived column indicates whether or not a passenger survived the sinking of the Titanic, with 0 indicating they did not survive and 1 indicating the survivors.
+
+We need more information, so on further exploration using several functions from dplyr package, including select(), filter(), and summarize(). Where select() function allows me to select specific columns from the data set, while the filter() function filters the data set based on certain met conditions. The summarize() function summarizes the data by performing calculations on specific columns.
+
+```{r}
+summary(titan_data)
+```
+
+```{r}
+titan_clean <- titan_data %>%
+  select(-Name, -Ticket, -Cabin) %>%
+  mutate(Survived = factor(Survived, levels = c(0, 1), labels = c("No", "Yes"))) %>%
+  drop_na()
+```
+
+Missing values can be problematic we drop them using the drop_na() function.
+
+Exploratory Data Analysis within the data set using various Tidyverse functions.
+
+Lets examine the distribution of the Survived variable using the ggplot2 library:
+
+```{r}
+ggplot(titan_clean, aes(x = Survived)) +
+  geom_bar() +
+  labs(title = "Distribution of Survival", x = "Survived", y = "Count")
+```
+
+We produce a bar chart showing the distribution of survival among the passengers. From this, We see that majority of passengers did not survive.
+
+#### Explore the relationship between survival chances and passenger class:
+
+```{r}
+ggplot(titan_clean, aes(x = Survived, fill = factor(Pclass))) +
+  geom_bar(position = "dodge") +
+  labs(title = "Survival by Passenger Class", x = "Survived", y = "Count") +
+  scale_fill_discrete(name = "Passenger Class")
+```
+
+A stacked bar chart showing the number of passengers who survived and did not survive, grouped by passenger class. From this, we get a bit more interesting fact; majority of passengers who did not survive were in third class, and majority of survivors were in first class.
+
+Lets examine relationship between survival and age using a box plot:
+
+```{r warning=FALSE}
+ggplot(titan_clean, aes(x = factor(Survived), y = Age)) +
+  geom_boxplot() +
+  labs(title = "Survival by Age", x = "Survived", y = "Age")
+```
+
+We get a box plot showing age distribution for the survivors and those did not survive. We can see that the median age of survivors was lower than that of non-survivors. We also come across outliers (i.e. older passengers) among non-survivors.
+
+Lets check passenger class and its relationship with survival rate using a stacked bar chart:
+
+```{r}
+ggplot(titan_clean, aes(x = factor(Pclass), fill = factor(Survived))) +
+  geom_bar(position = "stack") +
+  labs(title = "Survival Rates by Passenger Class",
+       x = "Passenger Class",
+       y = "Passenger Count",
+       fill = "Survived")
+```
+
+From our resulting plot passengers in 3rd class had a higher survival rate than those in second or first class.
+
+Using a simple bar chart, we use the ggplot2 package to visualize the survival rates by gender.
+
+```{r}
+ggplot(titan_clean, aes(x = Survived, fill = Sex)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Survival by Gender", x = "Survived", y = "Count") +
+  scale_fill_discrete(name = "Gender")
+```
+
+This produces a bar chart showing the number of passengers who survived and those who died, grouped by gender. From the chart majority of survivors were female, while the majority of non-survivors were male.
+
+```{r warning=FALSE}
+# Histogram of Passenger Ages
+ggplot(titan_clean, aes(x = Age)) +
+  geom_histogram(binwidth = 5) +
+  ggtitle("Histogram of Passenger Ages") +
+  xlab("Age") +
+  ylab("Count")
+
+# Scatter Plot of Passenger Fares and Ages
+ggplot(titan_clean, aes(x = Age, y = Fare, color = factor(Pclass))) +
+  geom_point() +
+  ggtitle("Scatter Plot of Passenger Fares and Ages") +
+  xlab("Age") +
+  ylab("Fare") +
+  scale_color_manual(values = c("red", "blue", "green"), name = "Class", labels = c("1st", "2nd", "3rd"))
+
+
+```
+
+Our first plot is a histogram of passenger ages, x-axis representing age and the y-axis representing the count of passengers in each age range. The second plot is a scatter plot on passenger fares and ages, x-axis representing age, y-axis representing fare, and the color representing passenger class.
+
+Explore the relationship between survival and age:
+
+```{r}
+ggplot(titan_clean, aes(x = Age, fill = Survived)) + 
+  geom_density(alpha = 0.5) + 
+  labs(title = "Survival by Age", x = "Age", y = "Density") + 
+  scale_fill_discrete(name = "Survived")
+```
+
+This above density plot showing the distribution of age for passengers who survived and those who died. From the distribution for survivors we see a slight shift to the left, indicating that more children may have survived.
+
+
+## Data Manipulation
+
+Lets use the Tidyverse libraries to get answers to some more specific questions. We get to use the Tidyverse libraries that provide powerful tools for data manipulation.
+
+```{r}
+table(titan_clean$Survived)
+table(titan_clean$Pclass)
+table(titan_clean$Sex)
+table(titan_clean$SibSp)
+table(titan_clean$Parch)
+table(titan_clean$Embarked)
+```
+
+```{r}
+titan_clean$Survived = as.factor(titan_clean$Survived)
+titan_clean$Sex <- as.factor(titan_clean$Sex)
+titan_clean$Embarked <- as.factor(titan_clean$Embarked)
+titan_clean$Pclass <- as.factor(titan_clean$Pclass)
+summary(titan_clean)
+```
+
+```{r}
+colSums(is.na(titan_clean))
+```
+
+```{r}
+new_titan_clean = titan_clean[rowSums(is.na(titan_clean)) <=0, ]
+colSums(is.na(new_titan_clean))
+duplicated_rows <- duplicated(new_titan_clean)
+sum(duplicated_rows)
+```
+
+```{r}
+var_num <- c("Age", "Fare")
+par(mfrow = c(1,2))
+for (i in 1:length(var_num)) {
+boxplot(new_titan_clean[, var_num[i]], main = paste("Boxplot
+of", var_num[i]))
+}
+```
+
+First, we group the data by passenger class and get the mean fare for each class:
+
+```{r}
+titan_clean %>%
+  group_by(Pclass) %>%
+  summarize(mean_fare = mean(Fare))
+```
+
+The above table, we see that first class passengers paid, on average, over eight times as much as third class passengers.
+
+Next, we group the data by gender and calculate the percentage of survivors for each gender:
+
+```{r}
+titan_clean %>%
+  group_by(Sex) %>%
+  summarize(survival_rate = sum(Survived == "Yes") / n())
+```
+
+From the illustration, We can see that females were much more likely to survive than males.
+
+Lets get deeper, combine both passenger class and gender and calculate the percentage of survivors for each combination:
+
+```{r}
+titan_clean %>%
+  group_by(Pclass, Sex) %>%
+  summarize(survival_rate = sum(Survived == "Yes") / n())
+```
+
+We get a table showing the survivors percentage for each combination of passenger class and gender. We get another insight that first class females had the highest survival rate, while third class males had the lowest. Interesting discovery.
+
+```{r}
+titan_clean %>%
+  group_by(Pclass) %>%
+  summarize(mean_age = mean(Age))
+```
+
+From this we get to realize that 3rd class cohort had the youngest passengers most probably because they are not financially stable. The 3rd class also the older cohort probably because of financial stability reasons too.
+
+```{r}
+titan_clean$Age[is.na(titan_clean$Age)] <- median(titan_clean$Age, na.rm = TRUE)
+```
+
+#### Analysis of Trends and Correlations:
+
+```{r}
+chisq.test(table(titan_clean$Sex, titan_clean$Survived))
+
+```
+
+The resulting p-value was less than 0.05, which indicates a significant association between gender and survival.
+
+From the data exploration and visualization, several interesting trends and correlations can be observed.
+
+Firstly, we can see that the majority of passengers were in the third class, with only a small percentage in the first class. This could be an indication of the socio-economic status of the passengers on board the Titanic.
+
+Secondly, we can see that the majority of passengers who did not survive were male. This could be an indication of the "women and children first" policy that was followed during the evacuation of the ship.
+
+Thirdly, we can see that there is a correlation between passenger class and survival rate, with a higher percentage of first class passengers surviving compared to second and third class passengers.
+
+Finally, we can see that there is a correlation between passenger age and survival rate, with a higher percentage of younger passengers surviving compared to older passengers. This could be an indication of the "women and children first" policy that was followed during the evacuation of the ship.
+
+#### Conclusion
+
+In this analysis, we used the Tidyverse libraries in R to explore and manipulate the Titanic data set. We discovered that passenger class, age, and gender were all important factors in determining survival on the Titanic. Most importantly, we found that the majority of survivors were in first class. And interestingly they were female, and younger than non-survivors. A significant differences in survival rates based on passenger class and gender also emerged.
+
+From our analysis we have revealed several interesting trends and correlations. We found that the majority of passengers who died were in third class, while the majority of survivors were also in 3rd class. We also found that the distribution of age for survivors was slightly shifted to the left, indicating that more children may have survived.
+
+These tools provide a flexible and intuitive framework for working with data and can help analysts uncover insights and trends that might not be apparent using other tools.
+
+Several interesting trends and correlations were observed, including the socio-economic status of the passengers, the impact of the "women and children first" policy on survival rates, and the correlation between passenger age and survival rate. The visualizations created using ggplot allowed for a better understanding of the data and helped to identify these trends and correlations.
+
+Overall, this analysis provides insight into the factors that may have influenced survival on the Titanic. Further analysis could be done to explore other variables, such as gender and family size, and to build predictive models to identify which passengers were most likely to survive.
