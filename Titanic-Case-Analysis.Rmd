@@ -46,9 +46,9 @@ summary(titan_data)
 ```
 
 ```{r}
-titan_clean <- titan_data %>%
-  select(-Name, -Ticket, -Cabin) %>%
-  mutate(Survived = factor(Survived, levels = c(0, 1), labels = c("No", "Yes"))) %>%
+titan_clean <- titan_data |>
+  select(-Name, -Ticket, -Cabin) |>
+  mutate(Survived = factor(Survived, levels = c(0, 1), labels = c("No", "Yes"))) |>
   drop_na()
 ```
 
@@ -188,8 +188,8 @@ of", var_num[i]))
 First, we group the data by passenger class and get the mean fare for each class:
 
 ```{r}
-titan_clean %>%
-  group_by(Pclass) %>%
+titan_clean |>
+  group_by(Pclass) |>
   summarize(mean_fare = mean(Fare))
 ```
 
@@ -198,8 +198,8 @@ The above table, we see that first class passengers paid, on average, over eight
 Next, we group the data by gender and calculate the percentage of survivors for each gender:
 
 ```{r}
-titan_clean %>%
-  group_by(Sex) %>%
+titan_clean |>
+  group_by(Sex) |>
   summarize(survival_rate = sum(Survived == "Yes") / n())
 ```
 
@@ -208,16 +208,16 @@ From the illustration, We can see that females were much more likely to survive 
 Lets get deeper, combine both passenger class and gender and calculate the percentage of survivors for each combination:
 
 ```{r}
-titan_clean %>%
-  group_by(Pclass, Sex) %>%
+titan_clean |>
+  group_by(Pclass, Sex) |>
   summarize(survival_rate = sum(Survived == "Yes") / n())
 ```
 
 We get a table showing the survivors percentage for each combination of passenger class and gender. We get another insight that first class females had the highest survival rate, while third class males had the lowest. Interesting discovery.
 
 ```{r}
-titan_clean %>%
-  group_by(Pclass) %>%
+titan_clean |>
+  group_by(Pclass) |>
   summarize(mean_age = mean(Age))
 ```
 
